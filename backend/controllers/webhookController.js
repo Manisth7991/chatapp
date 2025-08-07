@@ -21,9 +21,9 @@ export const handleWebhook = async (req, res) => {
             { upsert: true, new: true }
         );
 
-        // Emit to connected clients
+        // Emit to connected clients in the conversation room
         if (req.io) {
-            req.io.emit("new_message", savedMessage);
+            req.io.broadcastToConversation?.(savedMessage.wa_id, "new_message", savedMessage);
         }
 
         res.status(200).json({

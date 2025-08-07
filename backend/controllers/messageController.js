@@ -111,9 +111,8 @@ export const sendMessage = async (req, res) => {
             status: "sent"
         });
 
-        // Emit to connected clients
+        // Emit to connected clients in the conversation room
         if (req.io) {
-            req.io.emit("new_message", message);
             req.io.broadcastToConversation?.(wa_id, "new_message", message);
         }
 
