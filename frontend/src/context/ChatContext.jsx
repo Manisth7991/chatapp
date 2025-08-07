@@ -42,20 +42,9 @@ const chatReducer = (state, action) => {
         case 'ADD_MESSAGE':
             const newMessage = action.payload;
 
-            // Check if message already exists in selected messages to prevent duplicates
-            const messageExists = state.selectedMessages.some(msg => msg.msg_id === newMessage.msg_id);
-            if (messageExists) {
-                return state;
-            }
-
             // Update conversations list
             const updatedConversations = state.conversations.map(conv => {
                 if (conv.wa_id === newMessage.wa_id) {
-                    // Check if message already exists in conversation
-                    const messageExistsInConv = conv.messages.some(msg => msg.msg_id === newMessage.msg_id);
-                    if (messageExistsInConv) {
-                        return conv;
-                    }
                     return {
                         ...conv,
                         lastMessage: newMessage.text,
@@ -202,13 +191,10 @@ export const ChatProvider = ({ children }) => {
             dispatch({ type: 'SET_ERROR', payload: error.message });
             dispatch({ type: 'SET_MESSAGES_LOADING', payload: false });
         }
-    };
-
-    const sendMessage = async (wa_id, name, text) => {
+    }; const sendMessage = async (wa_id, name, text) => {
         try {
             const response = await chatAPI.sendMessage({ wa_id, name, text });
-            // Add the message immediately to avoid duplication from socket
-            dispatch({ type: 'ADD_MESSAGE', payload: response.data.data });
+            // Message will be added via socket event
             return response.data.data;
         } catch (error) {
             dispatch({ type: 'SET_ERROR', payload: error.message });
