@@ -6,8 +6,8 @@ import { SocketProvider, useSocket } from './context/SocketContext';
 import { ChatProvider, useChat } from './context/ChatContext';
 
 function AppContent() {
-    const { selectedConversation, selectConversation } = useChat();
-    const { isConnected } = useSocket();
+    const { selectedConversation, selectConversation, isAppFunctional } = useChat();
+    const { isConnected, connectionAttempts } = useSocket();
     const [isMobile, setIsMobile] = useState(false);
     const [showConnectionStatus, setShowConnectionStatus] = useState(false);
 
@@ -21,21 +21,34 @@ function AppContent() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Show connection status on mobile when disconnected
+    // Only show connection error if both socket is disconnected AND app is not functional
     useEffect(() => {
-        if (!isConnected && isMobile) {
+        const shouldShowError = !isConnected && !isAppFunctional && connectionAttempts > 2;
+
+        if (shouldShowError && isMobile) {
             setShowConnectionStatus(true);
-            const timer = setTimeout(() => setShowConnectionStatus(false), 3000);
+            // Auto-hide after 5 seconds
+            const timer = setTimeout(() => {
+                setShowConnectionStatus(false);
+            }, 5000);
             return () => clearTimeout(timer);
+        } else {
+            setShowConnectionStatus(false);
         }
-    }, [isConnected, isMobile]);
+    }, [isConnected, isAppFunctional, connectionAttempts, isMobile]);
 
     return (
         <div className="h-screen bg-whatsapp-background flex overflow-hidden">
-            {/* Connection Status Indicator for Mobile */}
-            {showConnectionStatus && (
+            {/* Connection Status Indicator - Only show when app is truly non-functional */}
+            {showConnectionStatus && isMobile && (
                 <div className="absolute top-0 left-0 right-0 z-50 bg-red-500 text-white text-center py-2 text-sm">
-                    Connection lost. Attempting to reconnect...
+                    <span>Connection lost. Attempting to reconnect...</span>
+                    <button
+                        onClick={() => setShowConnectionStatus(false)}
+                        className="ml-4 underline hover:no-underline"
+                    >
+                        Dismiss
+                    </button>
                 </div>
             )}
 

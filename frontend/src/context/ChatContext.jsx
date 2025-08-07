@@ -116,6 +116,9 @@ const chatReducer = (state, action) => {
             });
             return { ...state, conversations: updatedConversationsRead };
 
+        case 'SET_APP_FUNCTIONAL':
+            return { ...state, isAppFunctional: action.payload };
+
         default:
             return state;
     }
@@ -128,12 +131,28 @@ const initialState = {
     loading: false,
     messagesLoading: false,
     error: null,
-    typingUsers: {}
+    typingUsers: {},
+    isAppFunctional: true
 };
 
 export const ChatProvider = ({ children }) => {
     const [state, dispatch] = useReducer(chatReducer, initialState);
     const { socket } = useSocket();
+
+    // Test app functionality on mount
+    useEffect(() => {
+        const testAppFunctionality = async () => {
+            try {
+                await chatAPI.healthCheck();
+                dispatch({ type: 'SET_APP_FUNCTIONAL', payload: true });
+            } catch (error) {
+                console.log('Initial health check failed, but app might still work');
+                // Don't mark as non-functional yet, let other API calls determine this
+            }
+        };
+
+        testAppFunctionality();
+    }, []);
 
     // Socket event listeners
     useEffect(() => {
@@ -176,10 +195,12 @@ export const ChatProvider = ({ children }) => {
 
             const response = await chatAPI.getConversations();
             dispatch({ type: 'SET_CONVERSATIONS', payload: response.data.data || [] });
+            dispatch({ type: 'SET_APP_FUNCTIONAL', payload: true });
         } catch (error) {
             console.error('Error fetching conversations:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Failed to load conversations';
             dispatch({ type: 'SET_ERROR', payload: errorMessage });
+            dispatch({ type: 'SET_APP_FUNCTIONAL', payload: false });
         }
     };
 
@@ -190,11 +211,13 @@ export const ChatProvider = ({ children }) => {
 
             const response = await chatAPI.getConversation(wa_id);
             dispatch({ type: 'SET_SELECTED_MESSAGES', payload: response.data.data?.messages || [] });
+            dispatch({ type: 'SET_APP_FUNCTIONAL', payload: true });
         } catch (error) {
             console.error('Error fetching messages:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Failed to load messages';
             dispatch({ type: 'SET_ERROR', payload: errorMessage });
             dispatch({ type: 'SET_MESSAGES_LOADING', payload: false });
+            dispatch({ type: 'SET_APP_FUNCTIONAL', payload: false });
         }
     };
 

@@ -15,6 +15,7 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionAttempts, setConnectionAttempts] = useState(0);
+    const [isAppFunctional, setIsAppFunctional] = useState(true);
 
     useEffect(() => {
         const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -36,17 +37,24 @@ export const SocketProvider = ({ children }) => {
                 console.log('Socket connected successfully');
                 setIsConnected(true);
                 setConnectionAttempts(0);
+                setIsAppFunctional(true);
             });
 
             newSocket.on('disconnect', (reason) => {
                 console.log('Socket disconnected:', reason);
-                setIsConnected(false);
+                // Only set disconnected if it's not a client-side disconnect
+                if (reason !== 'client namespace disconnect' && reason !== 'io client disconnect') {
+                    setIsConnected(false);
+                }
             });
 
             newSocket.on('connect_error', (error) => {
                 console.error('Socket connection error:', error);
-                setIsConnected(false);
-                setConnectionAttempts(prev => prev + 1);
+                // Only increment attempts and set disconnected for real connection errors
+                if (error.type === 'TransportError' || error.message.includes('ECONNREFUSED')) {
+                    setIsConnected(false);
+                    setConnectionAttempts(prev => prev + 1);
+                }
             });
 
             newSocket.on('reconnect', (attemptNumber) => {
@@ -57,6 +65,7 @@ export const SocketProvider = ({ children }) => {
 
             newSocket.on('reconnect_error', (error) => {
                 console.error('Socket reconnection error:', error);
+                setConnectionAttempts(prev => prev + 1);
             });
 
             setSocket(newSocket);
@@ -101,6 +110,7 @@ export const SocketProvider = ({ children }) => {
         socket,
         isConnected,
         connectionAttempts,
+        isAppFunctional,
         joinConversation,
         leaveConversation,
         sendTyping,
