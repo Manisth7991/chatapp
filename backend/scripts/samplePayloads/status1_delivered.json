@@ -1,0 +1,45 @@
+{
+    "payload_type": "whatsapp_webhook",
+    "_id": "conv1-msg1-status-delivered",
+    "metaData": {
+        "entry": [
+            {
+                "changes": [
+                    {
+                        "field": "messages",
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "918329446654",
+                                "phone_number_id": "629305560276479"
+                            },
+                            "statuses": [
+                                {
+                                    "conversation": {
+                                        "id": "conv1-convo-id",
+                                        "origin": {
+                                            "type": "user_initiated"
+                                        }
+                                    },
+                                    "gs_id": "conv1-msg1-gs-id",
+                                    "id": "wamid.HBgMOTE5OTY3NTc4NzIwFQIAEhggMTIzQURFRjEyMzQ1Njc4OTA=",
+                                    "meta_msg_id": "wamid.HBgMOTE5OTY3NTc4NzIwFQIAEhggMTIzQURFRjEyMzQ1Njc4OTA=",
+                                    "recipient_id": "919937320320",
+                                    "status": "delivered",
+                                    "timestamp": "1754400010"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "id": "30164062719905277"
+            }
+        ],
+        "gs_app_id": "conv1-app",
+        "object": "whatsapp_business_account"
+    },
+    "createdAt": "2025-08-06 12:00:10",
+    "startedAt": "2025-08-06 12:00:10",
+    "completedAt": "2025-08-06 12:00:10",
+    "executed": true
+}

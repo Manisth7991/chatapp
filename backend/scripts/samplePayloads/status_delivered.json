@@ -1,0 +1,44 @@
+{
+    "payload_type": "whatsapp_webhook",
+    "_id": "status-update-test",
+    "metaData": {
+        "entry": [
+            {
+                "changes": [
+                    {
+                        "field": "messages",
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "918329446654",
+                                "phone_number_id": "629305560276479"
+                            },
+                            "statuses": [
+                                {
+                                    "conversation": {
+                                        "id": "test-convo-id",
+                                        "origin": {
+                                            "type": "user_initiated"
+                                        }
+                                    },
+                                    "id": "wamid.HBgMOTE5OTY3NTc4NzIwFQIAEhggMTIzQURFRjEyMzQ1Njc4OTA=",
+                                    "meta_msg_id": "wamid.HBgMOTE5OTY3NTc4NzIwFQIAEhggMTIzQURFRjEyMzQ1Njc4OTA=",
+                                    "recipient_id": "919937320320",
+                                    "status": "delivered",
+                                    "timestamp": "1754400060"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "id": "30164062719905279"
+            }
+        ],
+        "gs_app_id": "test-app",
+        "object": "whatsapp_business_account"
+    },
+    "createdAt": "2025-08-07 11:06:00",
+    "startedAt": "2025-08-07 11:06:00",
+    "completedAt": "2025-08-07 11:06:00",
+    "executed": true
+}
