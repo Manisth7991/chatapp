@@ -172,32 +172,40 @@ export const ChatProvider = ({ children }) => {
     const fetchConversations = async () => {
         try {
             dispatch({ type: 'SET_LOADING', payload: true });
+            dispatch({ type: 'SET_ERROR', payload: null });
+
             const response = await chatAPI.getConversations();
-            dispatch({ type: 'SET_CONVERSATIONS', payload: response.data.data });
+            dispatch({ type: 'SET_CONVERSATIONS', payload: response.data.data || [] });
         } catch (error) {
             console.error('Error fetching conversations:', error);
-            dispatch({ type: 'SET_ERROR', payload: error.message });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to load conversations';
+            dispatch({ type: 'SET_ERROR', payload: errorMessage });
         }
     };
 
     const fetchMessages = async (wa_id) => {
         try {
             dispatch({ type: 'SET_MESSAGES_LOADING', payload: true });
+            dispatch({ type: 'SET_ERROR', payload: null });
 
             const response = await chatAPI.getConversation(wa_id);
-            dispatch({ type: 'SET_SELECTED_MESSAGES', payload: response.data.data.messages });
+            dispatch({ type: 'SET_SELECTED_MESSAGES', payload: response.data.data?.messages || [] });
         } catch (error) {
             console.error('Error fetching messages:', error);
-            dispatch({ type: 'SET_ERROR', payload: error.message });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to load messages';
+            dispatch({ type: 'SET_ERROR', payload: errorMessage });
             dispatch({ type: 'SET_MESSAGES_LOADING', payload: false });
         }
-    }; const sendMessage = async (wa_id, name, text) => {
+    };
+
+    const sendMessage = async (wa_id, name, text) => {
         try {
             const response = await chatAPI.sendMessage({ wa_id, name, text });
             // Message will be added via socket event
             return response.data.data;
         } catch (error) {
-            dispatch({ type: 'SET_ERROR', payload: error.message });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to send message';
+            dispatch({ type: 'SET_ERROR', payload: errorMessage });
             console.error('Error sending message:', error);
             throw error;
         }

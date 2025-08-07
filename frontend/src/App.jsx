@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import ErrorBoundary from './components/ErrorBoundary';
-import { SocketProvider } from './context/SocketContext';
+import { SocketProvider, useSocket } from './context/SocketContext';
 import { ChatProvider, useChat } from './context/ChatContext';
 
 function AppContent() {
     const { selectedConversation, selectConversation } = useChat();
+    const { isConnected } = useSocket();
     const [isMobile, setIsMobile] = useState(false);
+    const [showConnectionStatus, setShowConnectionStatus] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -19,8 +21,24 @@ function AppContent() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    // Show connection status on mobile when disconnected
+    useEffect(() => {
+        if (!isConnected && isMobile) {
+            setShowConnectionStatus(true);
+            const timer = setTimeout(() => setShowConnectionStatus(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isConnected, isMobile]);
+
     return (
         <div className="h-screen bg-whatsapp-background flex overflow-hidden">
+            {/* Connection Status Indicator for Mobile */}
+            {showConnectionStatus && (
+                <div className="absolute top-0 left-0 right-0 z-50 bg-red-500 text-white text-center py-2 text-sm">
+                    Connection lost. Attempting to reconnect...
+                </div>
+            )}
+
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="w-full h-full bg-gradient-to-br from-whatsapp-primary/10 to-transparent"></div>

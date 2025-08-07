@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import MobileErrorBoundary from './MobileErrorBoundary';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -17,6 +18,24 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
+            // Check if we're on mobile
+            const isMobile = window.innerWidth < 768;
+
+            // Check if it's a network error
+            const isNetworkError = this.state.error?.message?.includes('Network') ||
+                this.state.error?.message?.includes('fetch') ||
+                this.state.error?.code === 'NETWORK_ERROR';
+
+            if (isMobile) {
+                return (
+                    <MobileErrorBoundary
+                        error={this.state.error?.message}
+                        isNetworkError={isNetworkError}
+                        onRetry={() => window.location.reload()}
+                    />
+                );
+            }
+
             return (
                 <div className="h-screen flex items-center justify-center bg-gray-50">
                     <div className="text-center max-w-md mx-auto p-6">

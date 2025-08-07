@@ -14,30 +14,62 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
+    const [connectionAttempts, setConnectionAttempts] = useState(0);
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5000', {
-            transports: ['websocket'],
-            autoConnect: true,
-        });
+        const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-        newSocket.on('connect', () => {
-            setIsConnected(true);
-        });
+        const createConnection = () => {
+            const newSocket = io(SOCKET_URL, {
+                transports: ['polling', 'websocket'], // Try polling first for mobile compatibility
+                autoConnect: true,
+                timeout: 20000,
+                forceNew: true,
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                maxReconnectionAttempts: 5,
+            });
 
-        newSocket.on('disconnect', (reason) => {
-            setIsConnected(false);
-        });
+            newSocket.on('connect', () => {
+                console.log('Socket connected successfully');
+                setIsConnected(true);
+                setConnectionAttempts(0);
+            });
 
-        newSocket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-            setIsConnected(false);
-        });
+            newSocket.on('disconnect', (reason) => {
+                console.log('Socket disconnected:', reason);
+                setIsConnected(false);
+            });
 
-        setSocket(newSocket);
+            newSocket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+                setIsConnected(false);
+                setConnectionAttempts(prev => prev + 1);
+            });
+
+            newSocket.on('reconnect', (attemptNumber) => {
+                console.log('Socket reconnected after', attemptNumber, 'attempts');
+                setIsConnected(true);
+                setConnectionAttempts(0);
+            });
+
+            newSocket.on('reconnect_error', (error) => {
+                console.error('Socket reconnection error:', error);
+            });
+
+            setSocket(newSocket);
+
+            return newSocket;
+        };
+
+        const newSocket = createConnection();
 
         return () => {
-            newSocket.close();
+            if (newSocket) {
+                newSocket.close();
+            }
         };
     }, []);
 
@@ -68,6 +100,7 @@ export const SocketProvider = ({ children }) => {
     const value = {
         socket,
         isConnected,
+        connectionAttempts,
         joinConversation,
         leaveConversation,
         sendTyping,
